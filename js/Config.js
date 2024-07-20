@@ -32,54 +32,40 @@ window.CONFIG = {
   },
   submit: (btn, e) => {
     let args = {}
-    const currentLoop = (localStorage.getItem('loop') === 'y')
     CONFIG.locationOptions.forEach((opt) => {
       args[opt.id] = getElement(`${opt.id}-text`).value
       args[`${opt.id}-button`] = getElement(`${opt.id}-button`).checked
-      if (!currentLoop) {
-        localStorage.setItem(opt.id, args[opt.id])
-      }
+      localStorage.setItem(opt.id, args[opt.id])
     })
     args['countryCode'] = getElement('country-code-text').value
-    if (!currentLoop) {
-      localStorage.setItem('countryCode', args['countryCode'])
-    }
     CONFIG.options.forEach((opt) => {
       args[opt.id] = getElement(`${opt.id}-text`).value
-      if (!currentLoop) {
-        localStorage.setItem(opt.id, args[opt.id])
-      }
+      localStorage.setItem(opt.id, args[opt.id])
     })
     console.log(args)
-    if (currentLoop) {
-      if (localStorage.getItem('crawlText')) CONFIG.crawl = localStorage.getItem('crawlText')
-      if (localStorage.getItem('greetingText')) CONFIG.greeting = localStorage.getItem('greetingText')
-      if (localStorage.getItem('countryCode')) CONFIG.countryCode = localStorage.getItem('countryCode')
-    } else {
-      if (args.crawlText !== '') CONFIG.crawl = args.crawlText
-      if (args.greetingText !== '') CONFIG.greeting = args.greetingText
-      if (args.countryCode !== '') CONFIG.countryCode = args.countryCode
-      if (args.loop === 'y') CONFIG.loop = true
-    }
+    if (args.crawlText !== '') CONFIG.crawl = args.crawlText
+    if (args.greetingText !== '') CONFIG.greeting = args.greetingText
+    if(args.countryCode !== '') CONFIG.countryCode = args.countryCode
+    if (args.loop === 'y') CONFIG.loop = true
     
     if (args['airport-code-button']==true){ 
       CONFIG.locationMode="AIRPORT" 
       if(args['airport-code'].length==0){
         alert("Please enter an airport code")
-        return
+        return;
       }
     } 
     else { 
       CONFIG.locationMode="POSTAL" 
-      if(!currentLoop && args['zip-code'].length==0){
+      if(args['zip-code'].length==0){
         alert("Please enter a postal code")
-        return
+        return;
       }
 
     }
     
-    zipCode = args['zip-code'] || localStorage.getItem('zip-code')
-    airportCode = args['airport-code'] || localStorage.getItem('airport-code')
+    zipCode = args['zip-code'];
+    airportCode = args['airport-code'];
     
     CONFIG.unitField = CONFIG.units === 'm' ? 'metric' : (CONFIG.units === 'h' ? 'uk_hybrid' : 'imperial')
     fetchCurrentWeather();

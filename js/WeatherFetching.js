@@ -1,33 +1,32 @@
-function guessZipCode(){
+﻿
+const zipCodes = ["3101", "3103", "3105", "3150"]; // Lista de códigos postales
+
+function getWeatherDataForZip(zipCode) {
+  return fetch(`https://api.weather.com/v3/wx/forecast/daily/5day?postalKey=${zipCode}&format=json&apiKey=${CONFIG.secrets.twcAPIKey}`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => data);
+}
+
+function displayWeatherData(weatherData) {
+  // Aquí puedes definir cómo mostrar los datos meteorológicos en la interfaz de usuario
+  console.log(weatherData); // Por ahora, solo mostramos los datos en la consola
+}
+
+let currentIndex = 0;
+
+function guessZipCode() {
   // Skip geolookup until replaced with TWC (wunderground api dead)
   return;
 
-  var zipCodeElement = getElement("zip-code-text");
-  // Before filling with auto zip, check and see if
-  // there is already an input
-  if(zipCodeElement.value != ""){
-    return;
-  }
-
-  // always use wunderground API for geolookup
-  // only valid equivalent is GET v3/location/search
-  // TODO: use TWC API GET v3/location/search instead of wunderground geolookup
-  fetch(`https://api.wunderground.com/api/${CONFIG.secrets.wundergroundAPIKey}/geolookup/q/autoip.json`)
-    .then(function(response) {
-      //check for error
-      if (response.status !== 200) {
-        console.log("zip code request error");
-        return;
-      }
-      response.json().then(function(data) {
-        // Only fill zip if the user didn't touch
-        // the box while the zip was fetching
-        if(zipCodeElement.value == ""){
-          zipCodeElement.value = data.location.zip;
-        }
-      });
-    })
 }
+
+// Comenzar a mostrar el pronóstico del tiempo para los códigos postales en bucle
+guessZipCode();
 
 function fetchAlerts(){
   var alertCrawl = "";
@@ -273,3 +272,43 @@ function fetchRadarImages(){
 
   scheduleTimeline();
 }
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

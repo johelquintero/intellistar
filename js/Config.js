@@ -1,15 +1,21 @@
-window.CONFIG = {
-  crawl: `Thanks to all the contributors of this project. While it's not completely finished, the community effort has made this possible. Stars, contributions, and feedback are welcome and appreciated. Thanks for trying out this emulator.`,
-  greeting: 'This is your weather',
-  language: 'en-US', // Supported in TWC API
-  countryCode: 'US', // Supported in TWC API (for postal key)
-  units: 'e', // Supported in TWC API (e = English (imperial), m = Metric, h = Hybrid (UK)),
-  unitField: 'imperial', // Supported in TWC API. This field will be filled in automatically. (imperial = e, metric = m, uk_hybrid = h)
+﻿window.CONFIG = {
+  crawl: `Situación General: En horas de la madrugada y la mañana, se espera nubosidad productora de lluvias y lloviznas en la
+Guayana Esequiba, Bolívar, Amazonas, Delta Amacuro, Sucre, Monagas, Anzoátegui, la Guaira, norte de Aragua,
+Llanos Centrales/Occidentales, piedemonte andino y sur del Zulia; el resto del territorio nacional se mantendrá
+parcialmente nublado. En hora vespertinas y nocturnas, se estima abundante nubosidad en la mayor parte del territorio
+nacional, productora de precipitaciones de intensidad variable y actividad eléctrica, especialmente en zonas de la
+Guayana Esequiba, Delta Amacuro, Bolívar, Amazonas, Anzoátegui, Miranda, Distrito Capital, la Guaira,
+Aragua, Carabobo, Llanos Centrales y Occidentales..`,
+  greeting: 'Tu tiempo local',
+  language: 'es-ES', // Soportado en TWC API
+  countryCode: 'ES', // Soportado en TWC API (para la clave postal)
+  units: 'm', // Soportado en TWC API (e = Inglés (imperial), m = Métrico, h = Híbrido (UK)),
+  unitField: 'metric', // Soportado en TWC API. Este campo se llenará automáticamente. (imperial = e, metric = m, uk_hybrid = h)
   loop: false,
   locationMode: "POSTAL",
   secrets: {
     // Possibly deprecated key: See issue #29
-    // twcAPIKey: 'd522aa97197fd864d36b418f39ebb323'
+    // twcAPIKey: 'e1f10a1e78da46f5b10a1e78da96f525'
     twcAPIKey: 'e1f10a1e78da46f5b10a1e78da96f525'
   },
 

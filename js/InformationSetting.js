@@ -183,3 +183,41 @@ function getPageLogoFileName(subPageName){
       return "week.svg";
   }
 }
+
+function applySettings() {
+  // Detectar qué radio está seleccionado y actualizar variables globales
+  if (document.getElementById('zip-code-button').checked) {
+    CONFIG.locationMode = "POSTAL";
+    zipCode = document.getElementById('zip-code-text').value.trim();
+    CONFIG.countryCode = document.getElementById('country-code-text').value.trim().toUpperCase();
+    cityName = "";
+    airportCode = "";
+  } else if (document.getElementById('airport-code-button').checked) {
+    CONFIG.locationMode = "AIRPORT";
+    airportCode = document.getElementById('airport-code-text').value.trim().toUpperCase();
+    zipCode = "";
+    cityName = "";
+  } else if (document.getElementById('city-name-button').checked) {
+    CONFIG.locationMode = "CITY";
+    cityName = document.getElementById('city-name-text').value.trim();
+    zipCode = "";
+    airportCode = "";
+    // countryCode no es necesario aquí, ya que va incluido en cityName (ej: Valera,VE)
+  }
+
+  // Validación solo del campo correspondiente
+  if (CONFIG.locationMode === "CITY" && (!cityName || cityName === "")) {
+    alert("Por favor, introduce la ciudad y el país (ej: Valera,VE)");
+    return;
+  }
+  if (CONFIG.locationMode === "POSTAL" && (!zipCode || zipCode === "")) {
+    alert("Por favor, introduce el código postal");
+    return;
+  }
+  if (CONFIG.locationMode === "AIRPORT" && (!airportCode || airportCode === "")) {
+    alert("Por favor, introduce el código de aeropuerto");
+    return;
+  }
+
+  fetchCurrentWeather();
+}

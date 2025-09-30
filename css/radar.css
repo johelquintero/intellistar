@@ -7,9 +7,7 @@
   transform: translateY(-50%);
   text-align: center;
 }
-.radar-container{
-  overflow: hidden;
-}
+
 .key{
   display: inline-block;
   float: right;
@@ -51,4 +49,31 @@
   line-height: 30px;
   margin-top: 10px;
   margin-left: 2px;
+}
+
+.radar-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Asegura que la barra de título esté por encima del mapa del radar y ajusta el estilo */
+#radar-page .page-title-bar,
+#zoomed-radar-page .page-title-bar {
+  position: relative;
+  z-index: 10;
+  text-align: right; /* Mueve el texto a la derecha */
+  padding-right: 28px; /* Añade espacio a la derecha */
+  padding-left: 0; /* Elimina el espacio a la izquierda */
+}
+
+#radar-page .page-title-bar div,
+#zoomed-radar-page .page-title-bar div {
+  background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente */
+  padding: 0 15px; /* Relleno horizontal para el efecto de etiqueta */
+  border-radius: 5px; /* Bordes redondeados */
+  display: inline-block; /* Ajusta el fondo al tamaño del texto */
 }

@@ -1,8 +1,58 @@
 // Preset timeline sequences
-const MORNING = [{name: "Ahora", subpages: [{name: "current-page", duration: 13000}, {name: "radar-page", duration: 20000}]},{name: "Hoy", subpages: [{name: "today-page", duration: 10000}]},{name: "Esta noches", subpages: [{name: "tonight-page", duration: 10000}]},{name: "Pronostico extendido", subpages: [{name: "tomorrow-page", duration: 10000}, {name: "7day-page", duration: 13000}]},]
-const NIGHT = [{name: "Ahora", subpages: [{name: "current-page", duration: 13000}, {name: "radar-page", duration: 20000}]},{name: "Esta noche", subpages: [{name: "tonight-page", duration: 10000}]},{name: "Pronostico Extendido", subpages: [{name: "tomorrow-page", duration: 10000}, {name: "tomorrow-night-page", duration: 10000}, {name: "7day-page", duration: 13000}]},]
-const SINGLE = [{name: "Alertas", subpages: [{name: "single-alert-page", duration: 15000}]},{name: "Ahora", subpages: [{name: "current-page", duration: 13000}, {name: "radar-page", duration: 8000}, {name: "zoomed-radar-page", duration: 8000}]},{name: "Esta noche", subpages: [{name: "tonight-page", duration: 8000}]},{name: "Pronostico extendido", subpages: [{name: "tomorrow-page", duration: 8000}, {name: "7day-page", duration: 13000}]},]
-const MULTIPLE = [{name: "Alertas", subpages: [{name: "multiple-alerts-page", duration: 15000}]},{name: "Ahora", subpages: [{name: "current-page", duration: 13000}, {name: "radar-page", duration: 8000}, {name: "zoomed-radar-page", duration: 8000}]},{name: "Esta noche", subpages: [{name: "tonight-page", duration: 8000}]},{name: "Pronostico extendido", subpages: [{name: "tomorrow-page", duration: 8000}, {name: "7day-page", duration: 13000}]},]
+const MORNING = [
+  {name: "Ahora", subpages: [
+    {name: "current-page", duration: 13000},
+    {name: "radar-page", duration: 20000},
+    {name: "satellite-page", duration: 15000}
+  ]},
+  {name: "Hoy", subpages: [{name: "today-page", duration: 10000}]},
+  {name: "Esta noches", subpages: [{name: "tonight-page", duration: 10000}]},
+  {name: "Pronostico extendido", subpages: [
+    {name: "tomorrow-page", duration: 10000},
+    {name: "7day-page", duration: 13000}
+  ]},
+];
+const NIGHT = [
+  {name: "Ahora", subpages: [
+    {name: "current-page", duration: 13000},
+    {name: "radar-page", duration: 20000},
+    {name: "satellite-page", duration: 15000}
+  ]},
+  {name: "Esta noche", subpages: [{name: "tonight-page", duration: 10000}]},
+  {name: "Pronostico Extendido", subpages: [
+    {name: "tomorrow-page", duration: 10000},
+    {name: "tomorrow-night-page", duration: 10000},
+    {name: "7day-page", duration: 13000}
+  ]},
+];
+const SINGLE = [
+  {name: "Alertas", subpages: [{name: "single-alert-page", duration: 15000}]},
+  {name: "Ahora", subpages: [
+    {name: "current-page", duration: 13000},
+    {name: "radar-page", duration: 20000},
+    {name: "satellite-page", duration: 15000},
+    {name: "zoomed-radar-page", duration: 8000}
+  ]},
+  {name: "Esta noche", subpages: [{name: "tonight-page", duration: 8000}]},
+  {name: "Pronostico extendido", subpages: [
+    {name: "tomorrow-page", duration: 8000},
+    {name: "7day-page", duration: 13000}
+  ]},
+];
+const MULTIPLE = [
+  {name: "Alertas", subpages: [{name: "multiple-alerts-page", duration: 15000}]},
+  {name: "Ahora", subpages: [
+    {name: "current-page", duration: 13000},
+    {name: "radar-page", duration: 20000},
+    {name: "satellite-page", duration: 15000},
+    {name: "zoomed-radar-page", duration: 8000}
+  ]},
+  {name: "Esta noche", subpages: [{name: "tonight-page", duration: 8000}]},
+  {name: "Pronostico extendido", subpages: [
+    {name: "tomorrow-page", duration: 8000},
+    {name: "7day-page", duration: 13000}
+  ]},
+];
 const WEEKDAY = ["DOM",  "LUN", "MAR", "MIE", "JUE", "VIE", "SAB"];
 
 
@@ -23,6 +73,7 @@ window.onload = function () {
 
   CONFIG.addLocationOption('airport-code', 'Airport', 'ATL or KATL')
   CONFIG.addLocationOption('zip-code', 'Postal', '00000')
+  CONFIG.addLocationOption('city-name', 'Ciudad', 'Ciudad,PAIS (ej: Valera,VE)')
 
   CONFIG.addOption('crawlText', 'Crawl Text', 'Text that scrolls along the bottom')
   CONFIG.addOption('greetingText', 'Greeting Text', 'Message (or joke) that appears at the start')
@@ -213,10 +264,27 @@ function executePage(pageIndex, subPageIndex){
     animateDialFill('cc-dial-color', currentTemperature, 2500);
   }
   else if(currentSubPageName == 'radar-page'){
-    startRadar();
+    var radarContainer = getElement('radar-container');
+    radarContainer.innerHTML = '';
+    var iframe = document.createElement('iframe');
+    iframe.src = `radar_test.html?lat=${latitude}&lon=${longitude}&zoom=9`;
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+    radarContainer.appendChild(iframe);
+  }
+  else if(currentSubPageName == 'satellite-page'){
+    startSatellite();
   }
   else if(currentSubPageName == 'zoomed-radar-page'){
-    startZoomedRadar();
+    var radarContainer = getElement('zoomed-radar-container');
+    radarContainer.innerHTML = '';
+    var iframe = document.createElement('iframe');
+    iframe.src = `radar_test.html?lat=${latitude}&lon=${longitude}&zoom=10`;
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+    radarContainer.appendChild(iframe);
   }
   else if(currentSubPageName == "7day-page"){
   }
@@ -252,11 +320,45 @@ function resetProgressBar(){
 }
 
 function startRadar(){
-  getElement('radar-container').appendChild(radarImage);
+    var radarContainer = getElement('radar-container');
+    radarContainer.innerHTML = '';
+    var iframe = document.createElement('iframe');
+    iframe.src = `radar_test.html?lat=${latitude}&lon=${longitude}&zoom=8`;
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+    radarContainer.appendChild(iframe);
 }
 
 function startZoomedRadar(){
-  getElement('zoomed-radar-container').appendChild(zoomedRadarImage);
+    var radarContainer = getElement('zoomed-radar-container');
+    radarContainer.innerHTML = '';
+    var iframe = document.createElement('iframe');
+    iframe.src = `radar_test.html?lat=${latitude}&lon=${longitude}&zoom=10`;
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+    radarContainer.appendChild(iframe);
+}
+
+function startSatellite(){
+  var container = getElement('satellite-widget-container');
+  container.innerHTML = '';
+  // Windy con overlay solo de satélite, zoom 6, y modo "widen"
+  var lat = typeof latitude !== "undefined" ? latitude : 4.324;
+  var lon = typeof longitude !== "undefined" ? longitude : -65.737;
+  var url = `https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=default&metricWind=default&zoom=8&overlay=satellite&product=satellite&level=surface&widen=1&lat=${lat}&lon=${lon}`;
+  var iframe = document.createElement('iframe');
+  iframe.src = url;
+  iframe.width = "100%";
+  iframe.height = "720";
+  iframe.frameBorder = "0";
+  container.appendChild(iframe);
+}
+
+// Añadido para la depuración
+function debug(){
+  alert("latitude: " + latitude + "\nlongitude: " + longitude);
 }
 
 function loadCC(){

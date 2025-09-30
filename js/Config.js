@@ -12,12 +12,16 @@ Aragua, Carabobo, Llanos Centrales y Occidentales..`,
   units: 'm', // Soportado en TWC API (e = Inglés (imperial), m = Métrico, h = Híbrido (UK)),
   unitField: 'metric', // Soportado en TWC API. Este campo se llenará automáticamente. (imperial = e, metric = m, uk_hybrid = h)
   loop: false,
-  locationMode: "POSTAL",
+  locationMode: "CITY",
   secrets: {
     // Possibly deprecated key: See issue #29
     // twcAPIKey: 'e1f10a1e78da46f5b10a1e78da96f525'
     twcAPIKey: 'e1f10a1e78da46f5b10a1e78da96f525'
   },
+
+  // --- Autocomplete additions ---
+  debounceTimer: null,
+  selectedLocation: null, // Will store {lat, lon} for selected city
 
   // Config Functions (index.html settings manager)
   locationOptions:[],
@@ -58,38 +62,126 @@ Aragua, Carabobo, Llanos Centrales y Occidentales..`,
     })
     console.log(args)
     if (currentLoop) {
-      if (localStorage.getItem('crawlText')) CONFIG.crawl = localStorage.getItem('crawlText')
-      if (localStorage.getItem('greetingText')) CONFIG.greeting = localStorage.getItem('greetingText')
-      if (localStorage.getItem('countryCode')) CONFIG.countryCode = localStorage.getItem('countryCode')
+      if (localStorage.getItem('crawlText')) CONFIG.crawl = localStorage.getItem('crawlText');
+      if (localStorage.getItem('greetingText')) CONFIG.greeting = localStorage.getItem('greetingText');
+      if (localStorage.getItem('countryCode')) CONFIG.countryCode = localStorage.getItem('countryCode');
+      // --- FIX: Restore locationMode when looping ---
+      if (localStorage.getItem('locationMode')) CONFIG.locationMode = localStorage.getItem('locationMode');
     } else {
-      if (args.crawlText !== '') CONFIG.crawl = args.crawlText
-      if (args.greetingText !== '') CONFIG.greeting = args.greetingText
-      if (args.countryCode !== '') CONFIG.countryCode = args.countryCode
-      if (args.loop === 'y') CONFIG.loop = true
-    }
-    
-    if (args['airport-code-button']==true){ 
-      CONFIG.locationMode="AIRPORT" 
-      if(args['airport-code'].length==0){
-        alert("Please enter an airport code")
-        return
-      }
-    } 
-    else { 
-      CONFIG.locationMode="POSTAL" 
-      if(!currentLoop && args['zip-code'].length==0){
-        alert("Please enter a postal code")
-        return
-      }
+      if (args.crawlText !== '') CONFIG.crawl = args.crawlText;
+      if (args.greetingText !== '') CONFIG.greeting = args.greetingText;
+      if (args.countryCode !== '') CONFIG.countryCode = args.countryCode;
+      if (args.loop === 'y') CONFIG.loop = true;
 
+      // Determine and validate location mode
+      if (args['airport-code-button'] == true) {
+        CONFIG.locationMode = "AIRPORT";
+        if (args['airport-code'].length == 0) {
+          alert("Please enter an airport code");
+          return;
+        }
+      } else if (args['city-name-button'] == true) {
+        CONFIG.locationMode = "CITY";
+        if (args['city-name'].length == 0) {
+          alert("Please enter a city name");
+          return;
+        }
+      } else {
+        CONFIG.locationMode = "POSTAL";
+        if (args['zip-code'].length == 0) {
+          alert("Please enter a postal code");
+          return;
+        }
+      }
+      // --- FIX: Save locationMode when not looping ---
+      localStorage.setItem('locationMode', CONFIG.locationMode);
     }
     
     zipCode = args['zip-code'] || localStorage.getItem('zip-code')
     airportCode = args['airport-code'] || localStorage.getItem('airport-code')
+    // Use the value from the input, as it might not be from a suggestion
+    cityName = getElement('city-name-text').value || localStorage.getItem('city-name')
     
     CONFIG.unitField = CONFIG.units === 'm' ? 'metric' : (CONFIG.units === 'h' ? 'uk_hybrid' : 'imperial')
-    fetchCurrentWeather();
+    
+    // --- MODIFICATION: Use selectedLocation if available ---
+    if (CONFIG.locationMode === "CITY" && CONFIG.selectedLocation) {
+        // If a suggestion was selected, we have precise coordinates.
+        latitude = CONFIG.selectedLocation.lat;
+        longitude = CONFIG.selectedLocation.lon;
+        // Directly call the function that uses coordinates
+        fetchCurrentWeather(true); // Pass a flag to indicate we have coords
+    } else {
+        // Proceed with the normal lookup process
+        fetchCurrentWeather(false);
+    }
   },
+
+  // --- AUTOCOMPLETE FUNCTIONS ---
+  debounce: (func, delay) => {
+    clearTimeout(CONFIG.debounceTimer);
+    CONFIG.debounceTimer = setTimeout(func, delay);
+  },
+
+  handleCityInput: (event) => {
+    const query = event.target.value;
+    if (query.length < 3) {
+      getElement('city-suggestions').innerHTML = '';
+      getElement('city-suggestions').style.display = 'none';
+      return;
+    }
+    CONFIG.debounce(() => CONFIG.fetchCitySuggestions(query), 300);
+  },
+
+  fetchCitySuggestions: (query) => {
+    fetch(`https://api.weather.com/v3/location/search?query=${query}&locationType=city&language=${CONFIG.language}&format=json&apiKey=${CONFIG.secrets.twcAPIKey}`)
+      .then(response => response.json())
+      .then(data => {
+        CONFIG.displaySuggestions(data.location ? data.location.address : []);
+      })
+      .catch(error => console.error('Error fetching city suggestions:', error));
+  },
+
+  displaySuggestions: (suggestions) => {
+    const suggestionsContainer = getElement('city-suggestions');
+    suggestionsContainer.innerHTML = '';
+    if (suggestions.length === 0) {
+      suggestionsContainer.style.display = 'none';
+      return;
+    }
+
+    suggestions.forEach(suggestion => {
+      const item = document.createElement('div');
+      item.classList.add('suggestion-item');
+      item.textContent = suggestion;
+      item.addEventListener('click', () => CONFIG.selectSuggestion(suggestion, suggestionsContainer));
+      suggestionsContainer.appendChild(item);
+    });
+
+    suggestionsContainer.style.display = 'block';
+  },
+
+  selectSuggestion: (suggestion, container) => {
+    const cityInput = getElement('city-name-text');
+    cityInput.value = suggestion;
+    container.innerHTML = '';
+    container.style.display = 'none';
+
+    // Fetch the exact lat/lon for the selected suggestion to ensure accuracy
+    fetch(`https://api.weather.com/v3/location/search?query=${suggestion}&locationType=city&language=${CONFIG.language}&format=json&apiKey=${CONFIG.secrets.twcAPIKey}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.location && data.location.latitude) {
+          CONFIG.selectedLocation = {
+            lat: data.location.latitude[0],
+            lon: data.location.longitude[0]
+          };
+          // Update global cityName to the selected one for display purposes
+          cityName = data.location.city[0].toUpperCase();
+        }
+      });
+  },
+
   load: () => {
     let settingsPrompt = getElement('settings-prompt')
     let advancedSettingsOptions = getElement('advanced-settings-options')
@@ -120,6 +212,17 @@ Aragua, Carabobo, Llanos Centrales y Occidentales..`,
       advancedSettingsOptions.appendChild(br)
       //<br>
     })
+
+    // --- Add event listener for autocomplete ---
+    const cityInput = getElement('city-name-text');
+    cityInput.addEventListener('input', CONFIG.handleCityInput);
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function(event) {
+        const suggestionsContainer = getElement('city-suggestions');
+        if (!suggestionsContainer.contains(event.target) && event.target !== cityInput) {
+            suggestionsContainer.style.display = 'none';
+        }
+    });
 
     let advancedButtonContainer = document.createElement('div')
     advancedButtonContainer.classList.add('settings-container')

@@ -163,7 +163,7 @@
             <div class="cc-line-container">
               <div class="cc-vertical-group cc-line3">
                 <div class="cc-horizontal-group">
-                  <div class="regular-text cc-text cc-left">Rafagas</div>
+                  <div class="regular-text cc-text cc-left">Rafagás</div>
                   <div id="cc-gusts" class="regular-text cc-text">Ninguna</div>
                 </div>
                 <div class="cc-horizontal-group">
@@ -192,7 +192,7 @@
  <!-- Radar Page -->
  <div id="radar-page" class="page-container regular-page-container">
   <div class="page-title-bar regular-text">
-    <div style="display: inline-block">Radar de lluvia</div>
+    <div style="display: inline-block">Radar de lluvia Regional</div>
   </div>
   <div class="page-content-container">
     <div id="radar-container" class="radar-container" style="position: absolute;">
@@ -200,10 +200,22 @@
   </div>
 </div>
 
+<!-- Satellite Page -->
+<div id="satellite-page" class="page-container regular-page-container">
+  <div class="page-title-bar regular-text">
+    <div style="display: inline-block">Imagen de satélite</div>
+  </div>
+  <div class="page-content-container">
+    <div id="satellite-widget-container" style="position: absolute; width: 100%;">
+      <!-- El iframe se insertará por JS para poder actualizar la ubicación si lo deseas -->
+    </div>
+  </div>
+</div>
+
 <!-- Zoomed Radar Page -->
 <div id="zoomed-radar-page" class="page-container regular-page-container">
   <div class="page-title-bar regular-text">
-    <div style="display: inline-block">Radar de lluvia</div>
+    <div style="display: inline-block">Radar de lluvia local</div>
   </div>
   <div class="page-content-container">
     <div id="zoomed-radar-container" class="radar-container" style="position: absolute;"></div>
@@ -400,7 +412,7 @@
         <!-- Locations won't be added programatically -->
         <tr>
           <td style="text-align: left;">
-            <input type="radio" id="airport-code-button" name='location-type' checked="false"/>
+            <input type="radio" id="airport-code-button" name='location-type' checked="false" onclick="updateLocationFields()"/>
             <label for="airport-code-button" class="strong-text settings-item settings-text settings-padded">Airport</label>
           </td>
           <td colspan="2">
@@ -411,16 +423,28 @@
 
         <tr>
           <td style="text-align: left;">
-            <input type="radio" id="zip-code-button" name='location-type' checked="true"/>
+            <input type="radio" id="zip-code-button" name='location-type' onclick="updateLocationFields()"/>
             <label for="zip-code-button" class="strong-text settings-item settings-text settings-padded">Postal</label>
           </td>
           <td>
-            <input type="text" id="zip-code-text" style="font-size: 20px; width:100px" 
+            <input type="text" id="zip-code-text" style="font-size: 20px; width:100px"
             placeholder="00000" class="settings-item settings-text settings-input"/>
           </td>
           <td>
-            <input type="text" id="country-code-text" style="font-size: 20px; width:50px;" 
+            <input type="text" id="country-code-text" style="font-size: 20px; width:50px;"
             placeholder="US" value="US" maxlength="2" class="settings-item settings-text settings-input"/>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="text-align: left;">
+            <input type="radio" id="city-name-button" name='location-type' checked="true" onclick="updateLocationFields()"/>
+            <label for="city-name-button" class="strong-text settings-item settings-text settings-padded">Ciudad</label>
+          </td>
+          <td colspan="2">
+            <input type="text" id="city-name-text" style="font-size: 20px; width:180px"
+            placeholder="Ciudad,PAIS (ej: Valera,VE)" class="settings-item settings-text settings-input"/>
+            <div id="city-suggestions" class="suggestions-container"></div>
           </td>
         </tr>
 
@@ -429,8 +453,32 @@
     <div id="advanced-settings-options" class="settings-container hidden"></div>
   </div>
 </div>
+<script>
+function updateLocationFields() {
+  // Evita errores si algún campo no existe
+  var airport = document.getElementById('airport-code-text');
+  var zip = document.getElementById('zip-code-text');
+  var country = document.getElementById('country-code-text');
+  var city = document.getElementById('city-name-text');
+  var airportRadio = document.getElementById('airport-code-button');
+  var zipRadio = document.getElementById('zip-code-button');
+  var cityRadio = document.getElementById('city-name-button');
+  if (!airport || !zip || !country || !city || !airportRadio || !zipRadio || !cityRadio) return;
 
+  const isAirport = airportRadio.checked;
+  const isPostal = zipRadio.checked;
+  const isCity = cityRadio.checked;
+
+  airport.disabled = !isAirport;
+  zip.disabled = !isPostal;
+  country.disabled = !(isPostal || isCity);
+  city.disabled = !isCity;
+}
+
+// Asegura que el DOM esté listo antes de ejecutar la función
+document.addEventListener('DOMContentLoaded', function() {
+  updateLocationFields();
+});
+</script>
 </body>
-
 </html>
-
